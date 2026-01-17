@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+nul
+
+# Batch files
+*.bat

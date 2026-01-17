@@ -1,0 +1,2467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare Connect - Between Sessions Care</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #10B981;
+            --accent: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --purple: #8B5CF6;
+            --pink: #EC4899;
+            --gold: #FFD700;
+            --bg-main: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --text-dark: #111827;
+            --text-medium: #6B7280;
+            --text-light: #9CA3AF;
+            --border: #E5E7EB;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            padding: 25px 0;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 1.6em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-badge {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .level-badge::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            border: 3px solid var(--gold);
+            opacity: 0.6;
+        }
+
+        .next-session {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 0.9em;
+        }
+
+        .header-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .points-animation {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--gold);
+            font-weight: bold;
+            animation: flyUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes flyUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+
+        /* XP Progress Bar */
+        .xp-progress {
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), #FFA500);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--bg-card);
+            border-radius: 15px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 25px;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            border: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--text-medium);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-main);
+            color: var(--primary);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .card h2 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            color: var(--text-dark);
+            margin-top: 20px;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        /* Challenge Card */
+        .challenge-card {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .challenge-card::before {
+            content: '🎯';
+            position: absolute;
+            font-size: 15em;
+            opacity: 0.1;
+            top: -50px;
+            right: -50px;
+        }
+
+        .challenge-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .challenge-desc {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .challenge-progress {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .challenge-reward {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        /* Avatar Card */
+        .avatar-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 15px;
+            margin: 0 auto 20px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid var(--border);
+        }
+
+        .avatar-background {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .avatar-character {
+            position: absolute;
+            font-size: 8em;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .avatar-badge-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+        }
+
+        .avatar-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .avatar-item {
+            aspect-ratio: 1;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .avatar-item:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .avatar-item.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .avatar-item.equipped {
+            border-color: var(--gold);
+            border-width: 3px;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.5em;
+        }
+
+        /* Leaderboard */
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-entry:hover {
+            border-color: var(--primary);
+        }
+
+        .leaderboard-entry.current-user {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-color: var(--primary);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .leaderboard-rank.top-3 {
+            color: var(--gold);
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .leaderboard-points {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        /* Caregiver Portal Tabs */
+        .portal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .portal-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-medium);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+        }
+
+        .portal-tab:hover {
+            color: var(--primary);
+        }
+
+        .portal-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .portal-content {
+            display: none;
+        }
+
+        .portal-content.active {
+            display: block;
+        }
+
+        /* Connection Code */
+        .connection-code {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            letter-spacing: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Alert Cards */
+        .alert-card {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .alert-card.red-flag {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+        }
+
+        .alert-card.yellow-flag {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--accent);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* Progress */
+        .progress-container {
+            margin: 15px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--text-medium);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--purple));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--text-medium);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            margin: 3% auto;
+            padding: 35px;
+            border-radius: 20px;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--text-dark);
+        }
+
+        .close {
+            color: var(--text-medium);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close:hover {
+            background: var(--bg-main);
+            color: var(--text-dark);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-left: 4px solid;
+        }
+
+        .alert-icon {
+            font-size: 1.5em;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--info);
+            color: var(--text-dark);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--secondary);
+            color: var(--text-dark);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--accent);
+            color: var(--text-dark);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+            color: var(--text-dark);
+        }
+
+        /* Badges */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-primary { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--secondary); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        .badge-gold { background: rgba(255, 215, 0, 0.2); color: #B8860B; }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-box-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-box-label {
+            color: var(--text-medium);
+            font-size: 0.9em;
+        }
+
+        /* Mood Options */
+        .mood-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .mood-option {
+            text-align: center;
+            padding: 20px 15px;
+            border: 3px solid var(--border);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mood-option:hover {
+            background: var(--bg-main);
+            transform: translateY(-3px);
+        }
+
+        .mood-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .mood-emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .mood-label {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-2,
+            .grid-3,
+            .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10% 5%;
+                padding: 25px;
+            }
+
+            nav {
+                position: relative;
+                top: 0;
+            }
+
+            .header-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Circular Progress */
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 10;
+        }
+
+        .circular-progress .bg {
+            stroke: var(--bg-main);
+        }
+
+        .circular-progress .progress {
+            stroke: var(--gold);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .circular-progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-top">
+                <div class="logo">
+                    <span>🌟</span>
+                    <span>MindCare Connect</span>
+                </div>
+                <div class="level-badge" id="headerLevelBadge">
+                    <span id="headerLevelNumber">1</span>
+                </div>
+                <div class="next-session">
+                    <strong>Next Session:</strong> Jan 25, 2026 at 2:00 PM
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="headerLevel">Beginner</div>
+                    <div class="stat-label">Level</div>
+                    <div class="xp-progress">
+                        <div class="xp-fill" id="headerXpFill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="headerPoints">0</div>
+                    <div class="stat-label">Total Points</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="headerStreak">0</div>
+                    <div class="stat-label">Day Streak 🔥</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="headerMedAdherence">0%</div>
+                    <div class="stat-label">Medication</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <button class="nav-btn active" onclick="showSection('dashboard')">
+                🏠 Dashboard
+            </button>
+            <button class="nav-btn" onclick="showSection('checkin')">
+                📊 Daily Check-In
+            </button>
+            <button class="nav-btn" onclick="showSection('gamification')">
+                🎮 Challenges
+            </button>
+            <button class="nav-btn" onclick="showSection('avatar')">
+                👤 Avatar
+            </button>
+            <button class="nav-btn" onclick="showSection('leaderboard')">
+                🏆 Leaderboard
+            </button>
+            <button class="nav-btn" onclick="showSection('medication')">
+                💊 Medications
+            </button>
+            <button class="nav-btn" onclick="showSection('activities')">
+                ✨ Activities
+            </button>
+            <button class="nav-btn" onclick="showSection('caregiver')">
+                👨‍👩‍👧 Care Team
+            </button>
+            <button class="nav-btn" onclick="showSection('psychiatrist')">
+                📊 Professional
+            </button>
+            <button class="nav-btn" onclick="showSection('settings')">
+                ⚙️ Settings
+            </button>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>👋 Welcome Back, <span id="userName">Friend</span>!</h2>
+                    <p style="margin-bottom: 20px;">Here's your progress overview. You're doing amazing!</p>
+
+                    <div id="dashboardAlerts"></div>
+
+                    <h3>Active Challenges</h3>
+                    <div id="dashboardChallenges"></div>
+                </div>
+
+                <div>
+                    <div class="challenge-card">
+                        <div class="challenge-title" id="featuredChallengeTitle">Daily Mindfulness</div>
+                        <div class="challenge-desc" id="featuredChallengeDesc">Complete your daily activities</div>
+                        <div class="challenge-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span id="featuredChallengeProgress">0/7</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="featuredChallengeBar" style="width: 0%; background: rgba(255,255,255,0.8);"></div>
+                            </div>
+                        </div>
+                        <div class="challenge-reward">
+                            <span>🏆</span>
+                            <span id="featuredChallengeReward">100 points</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>🎯 Quick Stats</h2>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-box-value" id="quickStatsPoints">0</div>
+                                <div class="stat-box-label">Total Points</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-value" id="quickStatsLevel">1</div>
+                                <div class="stat-box-label">Current Level</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Check-In Section -->
+        <div id="checkin" class="section">
+            <div class="card">
+                <h2>📊 Daily Check-In</h2>
+                <p style="margin-bottom: 25px; color: var(--text-medium);">
+                    Complete your daily check-in to earn <strong class="badge badge-gold">10 points</strong>
+                </p>
+
+                <h3>1. How are you feeling today?</h3>
+                <div class="mood-options">
+                    <div class="mood-option" onclick="selectMood(1, this)">
+                        <span class="mood-emoji">😢</span>
+                        <div class="mood-label">Crisis</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(2, this)">
+                        <span class="mood-emoji">😟</span>
+                        <div class="mood-label">Struggling</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(3, this)">
+                        <span class="mood-emoji">😐</span>
+                        <div class="mood-label">Okay</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(4, this)">
+                        <span class="mood-emoji">🙂</span>
+                        <div class="mood-label">Good</div>
+                    </div>
+                    <div class="mood-option" onclick="selectMood(5, this)">
+                        <span class="mood-emoji">😄</span>
+                        <div class="mood-label">Amazing</div>
+                    </div>
+                </div>
+
+                <h3>2. Wellness Check</h3>
+                <div class="form-group">
+                    <label class="form-label">Sleep Quality (1-10)</label>
+                    <input type="range" class="form-input" id="sleepQuality" min="1" max="10" value="7"
+                           oninput="document.getElementById('sleepValue').textContent = this.value">
+                    <div style="text-align: center; margin-top: 8px;">
+                        <strong><span id="sleepValue">7</span>/10</strong>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Energy Level (1-10)</label>
+                    <input type="range" class="form-input" id="energyLevel" min="1" max="10" value="6"
+                           oninput="document.getElementById('energyValue').textContent = this.value">
+                    <div style="text-align: center; margin-top: 8px;">
+                        <strong><span id="energyValue">6</span>/10</strong>
+                    </div>
+                </div>
+
+                <h3>3. Quick Note (Optional)</h3>
+                <div class="form-group">
+                    <textarea class="form-textarea" id="checkinNote"
+                              placeholder="How are you feeling today?"></textarea>
+                </div>
+
+                <button class="btn btn-success btn-full" onclick="saveCheckin()">
+                    <span>✅</span> Complete Check-In (+10 points)
+                </button>
+            </div>
+        </div>
+
+        <!-- Gamification Section -->
+        <div id="gamification" class="section">
+            <div class="card">
+                <h2>🎮 Daily Challenges</h2>
+                <p style="margin-bottom: 20px; color: var(--text-medium);">
+                    Complete challenges to earn bonus points! New challenges every day.
+                </p>
+                <div id="dailyChallengesList"></div>
+            </div>
+
+            <div class="card">
+                <h2>🎯 Weekly Challenges</h2>
+                <p style="margin-bottom: 20px; color: var(--text-medium);">
+                    Bigger challenges with bigger rewards! Resets every Sunday.
+                </p>
+                <div id="weeklyChallengesList"></div>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Your Achievements</h2>
+                <div id="achievementsList" class="grid-4"></div>
+            </div>
+        </div>
+
+        <!-- Avatar Section -->
+        <div id="avatar" class="section">
+            <div class="card">
+                <h2>👤 Customize Your Avatar</h2>
+                <div class="avatar-preview" id="avatarPreview">
+                    <div class="avatar-background" id="avatarBackground"></div>
+                    <div class="avatar-character" id="avatarCharacter">☁️</div>
+                    <div class="avatar-badge-display" id="avatarBadgeDisplay"></div>
+                </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn" onclick="saveAvatar()">💾 Save Changes</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎨 Backgrounds</h2>
+                <div id="backgroundItems" class="avatar-items-grid"></div>
+            </div>
+
+            <div class="card">
+                <h2>👾 Characters</h2>
+                <div id="characterItems" class="avatar-items-grid"></div>
+            </div>
+
+            <div class="card">
+                <h2>🏅 Badges</h2>
+                <div id="badgeItems" class="avatar-items-grid"></div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Section -->
+        <div id="leaderboard" class="section">
+            <div class="card">
+                <h2>🏆 Community Leaderboard</h2>
+
+                <div id="leaderboardOptIn" style="display: none;">
+                    <div class="alert alert-info">
+                        <span class="alert-icon">🔒</span>
+                        <div>
+                            <strong>Privacy First</strong>
+                            <p>Join the leaderboard anonymously! You'll get a random username and compete with others. No personal information is shared.</p>
+                            <button class="btn" style="margin-top: 10px;" onclick="enableLeaderboard()">
+                                Join Leaderboard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="leaderboardContent" style="display: none;">
+                    <div class="portal-tabs">
+                        <button class="portal-tab active" onclick="showLeaderboardTab('weekly')">Weekly</button>
+                        <button class="portal-tab" onclick="showLeaderboardTab('alltime')">All-Time</button>
+                    </div>
+
+                    <div id="leaderboardWeekly" class="portal-content active"></div>
+                    <div id="leaderboardAlltime" class="portal-content"></div>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-outline" onclick="disableLeaderboard()">
+                            Leave Leaderboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medication Section -->
+        <div id="medication" class="section">
+            <div class="card">
+                <h2>💊 Medication Management</h2>
+                <p style="margin-bottom: 20px; color: var(--text-medium);">
+                    Track your medications and earn <strong class="badge badge-gold">5 points</strong> for each dose taken!
+                </p>
+                <div id="medicationList"></div>
+                <button class="btn btn-outline" onclick="addMedication()">
+                    <span>➕</span> Add Medication
+                </button>
+            </div>
+        </div>
+
+        <!-- Activities Section -->
+        <div id="activities" class="section">
+            <div class="card">
+                <h2>✨ Therapeutic Activities</h2>
+                <p style="margin-bottom: 20px; color: var(--text-medium);">
+                    Complete activities to earn <strong class="badge badge-gold">15 points</strong> each!
+                </p>
+                <div id="activitiesList" class="grid-3"></div>
+            </div>
+        </div>
+
+        <!-- Caregiver Portal -->
+        <div id="caregiver" class="section">
+            <div class="card">
+                <h2>👨‍👩‍👧 Caregiver Portal</h2>
+
+                <div id="caregiverNotConnected">
+                    <div class="alert alert-info">
+                        <span class="alert-icon">💡</span>
+                        <div>
+                            <strong>Connect with Your Care Partner</strong>
+                            <p>Share your progress with a trusted family member or friend. You control what they see.</p>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="generateConnectionCode()">
+                        🔗 Generate Connection Code
+                    </button>
+                </div>
+
+                <div id="caregiverConnected" style="display: none;">
+                    <div class="portal-tabs">
+                        <button class="portal-tab active" onclick="showCaregiverTab('progress')">Progress</button>
+                        <button class="portal-tab" onclick="showCaregiverTab('messages')">Messages</button>
+                        <button class="portal-tab" onclick="showCaregiverTab('prompts')">Coaching</button>
+                        <button class="portal-tab" onclick="showCaregiverTab('education')">Education</button>
+                    </div>
+
+                    <div id="caregiverProgress" class="portal-content active"></div>
+                    <div id="caregiverMessages" class="portal-content"></div>
+                    <div id="caregiverPrompts" class="portal-content"></div>
+                    <div id="caregiverEducation" class="portal-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Psychiatrist Portal -->
+        <div id="psychiatrist" class="section">
+            <div class="card">
+                <h2>📊 Professional Insights Dashboard</h2>
+
+                <div id="psychiatristOptIn">
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">🔒</span>
+                        <div>
+                            <strong>Share with Your Provider</strong>
+                            <p>Enable data sharing to provide your psychiatrist with detailed insights about your progress. You can disable this anytime.</p>
+                            <button class="btn" style="margin-top: 10px;" onclick="enablePsychiatristSharing()">
+                                Enable Sharing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="psychiatristDashboard" style="display: none;">
+                    <div class="portal-tabs">
+                        <button class="portal-tab active" onclick="showPsychiatristTab('reports')">Reports</button>
+                        <button class="portal-tab" onclick="showPsychiatristTab('visualizations')">Data Viz</button>
+                        <button class="portal-tab" onclick="showPsychiatristTab('alerts')">Alerts</button>
+                        <button class="portal-tab" onclick="showPsychiatristTab('milestones')">Milestones</button>
+                    </div>
+
+                    <div id="psychiatristReports" class="portal-content active">
+                        <h3>Generate Report</h3>
+                        <div class="form-group">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-select" id="reportDateRange">
+                                <option value="7">Last 7 Days</option>
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-select" id="reportType">
+                                <option value="comprehensive">Comprehensive Report</option>
+                                <option value="mood">Mood Summary</option>
+                                <option value="medication">Medication Adherence</option>
+                                <option value="activity">Activity Report</option>
+                                <option value="engagement">Engagement Metrics</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="generateReport()">📄 Generate Report</button>
+                        <button class="btn btn-outline" onclick="exportReportPDF()">📥 Export as PDF</button>
+                    </div>
+
+                    <div id="psychiatristVisualizations" class="portal-content">
+                        <h3>Mood Trend</h3>
+                        <div class="chart-container">
+                            <canvas id="moodTrendChart"></canvas>
+                        </div>
+                        <h3 style="margin-top: 30px;">Activity Engagement</h3>
+                        <div class="chart-container">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div id="psychiatristAlerts" class="portal-content">
+                        <div id="alertsList"></div>
+                    </div>
+
+                    <div id="psychiatristMilestones" class="portal-content">
+                        <div id="milestonesList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="section">
+            <div class="card">
+                <h2>⚙️ Settings & Privacy</h2>
+
+                <h3>Profile</h3>
+                <div class="form-group">
+                    <label class="form-label">Display Name</label>
+                    <input type="text" class="form-input" id="settingsName" placeholder="Your name">
+                </div>
+
+                <h3>Privacy Controls</h3>
+                <div class="alert alert-info">
+                    <span class="alert-icon">🔒</span>
+                    <div>
+                        <strong>Your Privacy Matters</strong>
+                        <p>All your data is stored locally on your device. You control what gets shared and with whom.</p>
+                    </div>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="settingsCommunity" onchange="toggleCommunitySetting()">
+                        <span>Participate in anonymous leaderboards</span>
+                    </label>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="settingsPsychiatrist" onchange="togglePsychiatristSetting()">
+                        <span>Share data with healthcare provider</span>
+                    </label>
+                </div>
+
+                <h3>Data Management</h3>
+                <button class="btn btn-outline" onclick="exportAllData()">
+                    📥 Export All My Data
+                </button>
+                <button class="btn btn-danger" onclick="deleteAllData()" style="margin-left: 10px;">
+                    🗑️ Delete All Data
+                </button>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-success btn-full" onclick="saveSettings()">
+                        💾 Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">Modal</div>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== APP STATE ====================
+        let appState = {
+            version: 2,
+            user: {
+                name: 'Friend',
+                streak: 0,
+                lastCheckIn: null
+            },
+
+            // Gamification System
+            gamification: {
+                points: 0,
+                level: 1,
+                xp: 0,
+                xpToNextLevel: 100,
+
+                avatar: {
+                    unlockedItems: ['bg-default', 'char-cloud', 'char-sun'],
+                    equippedItems: {
+                        background: 'bg-default',
+                        character: 'char-cloud',
+                        badge: null
+                    }
+                },
+
+                activeChallenges: [],
+                completedChallenges: [],
+
+                achievements: []
+            },
+
+            // Caregiver System
+            caregiverConnection: {
+                connected: false,
+                code: null,
+                caregiverId: null,
+                permissions: {
+                    viewProgress: false,
+                    viewMood: false,
+                    receiveAlerts: false
+                },
+                messages: [],
+                coachingPrompts: []
+            },
+
+            // Psychiatrist System
+            psychiatristData: {
+                enableSharing: false,
+                providerId: null,
+                reports: [],
+                crisisEvents: [],
+                trends: {
+                    moodTrend: [],
+                    activityCorrelation: {},
+                    engagementPattern: []
+                }
+            },
+
+            // Community
+            community: {
+                anonymousId: null,
+                shareProgress: false,
+                globalRank: null,
+                weeklyPoints: 0
+            },
+
+            // Core tracking data
+            checkins: [],
+            medications: [],
+            activities: [],
+            selectedMood: null
+        };
+
+        // ==================== LEVEL SYSTEM ====================
+        const LEVEL_CONFIG = [
+            { level: 1, name: 'Beginner', xpRequired: 0 },
+            { level: 2, name: 'Learner', xpRequired: 100 },
+            { level: 3, name: 'Practicing', xpRequired: 250 },
+            { level: 4, name: 'Committed', xpRequired: 500 },
+            { level: 5, name: 'Focused', xpRequired: 1000 },
+            { level: 6, name: 'Resilient', xpRequired: 1800 },
+            { level: 7, name: 'Skilled', xpRequired: 3000 },
+            { level: 8, name: 'Advanced', xpRequired: 5000 },
+            { level: 9, name: 'Mastering', xpRequired: 8000 },
+            { level: 10, name: 'Expert', xpRequired: 12000 }
+        ];
+
+        // ==================== AVATAR ITEMS ====================
+        const AVATAR_ITEMS = {
+            backgrounds: [
+                { id: 'bg-default', name: 'Default', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', unlockLevel: 1 },
+                { id: 'bg-forest', name: 'Serene Forest', gradient: 'linear-gradient(135deg, #0ba360 0%, #3cba92 100%)', unlockLevel: 2 },
+                { id: 'bg-ocean', name: 'Ocean Waves', gradient: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', unlockLevel: 3 },
+                { id: 'bg-sunset', name: 'Sunset', gradient: 'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)', unlockLevel: 4 },
+                { id: 'bg-space', name: 'Cosmic', gradient: 'linear-gradient(135deg, #434343 0%, #000000 100%)', unlockLevel: 5 }
+            ],
+            characters: [
+                { id: 'char-cloud', emoji: '☁️', name: 'Calm Cloud', unlockLevel: 1 },
+                { id: 'char-sun', emoji: '☀️', name: 'Happy Sun', unlockLevel: 1 },
+                { id: 'char-moon', emoji: '🌙', name: 'Peaceful Moon', unlockLevel: 2 },
+                { id: 'char-star', emoji: '⭐', name: 'Bright Star', unlockLevel: 3 },
+                { id: 'char-tree', emoji: '🌳', name: 'Strong Tree', unlockLevel: 4 },
+                { id: 'char-mountain', emoji: '🏔️', name: 'Steady Mountain', unlockLevel: 5 }
+            ],
+            badges: [
+                { id: 'badge-streak3', emoji: '🔥', name: '3-Day Streak', unlockCondition: 'streak3' },
+                { id: 'badge-streak7', emoji: '💥', name: '7-Day Streak', unlockCondition: 'streak7' },
+                { id: 'badge-streak30', emoji: '⚡', name: '30-Day Streak', unlockCondition: 'streak30' },
+                { id: 'badge-first', emoji: '🎯', name: 'First Challenge', unlockCondition: 'firstChallenge' }
+            ]
+        };
+
+        // ==================== CHALLENGES ====================
+        const CHALLENGE_TEMPLATES = {
+            daily: [
+                { id: 'morning-checkin', name: 'Early Bird', desc: 'Complete check-in before 10 AM', points: 30, target: 1 },
+                { id: 'med-adherence', name: 'Med Master', desc: 'Take all medications on time', points: 40, target: 1 },
+                { id: 'breathing', name: 'Breathe Easy', desc: 'Complete breathing exercise', points: 25, target: 1 },
+                { id: 'journal', name: 'Write It Out', desc: 'Write a journal entry', points: 50, target: 1 }
+            ],
+            weekly: [
+                { id: 'consistent', name: 'Consistency Champion', desc: 'Check in 5 out of 7 days', points: 150, target: 5 },
+                { id: 'med-week', name: 'Weekly Med Master', desc: '90%+ medication adherence', points: 200, target: 90 },
+                { id: 'active-week', name: 'Active Week', desc: 'Complete 10 activities', points: 250, target: 10 },
+                { id: 'mindful-week', name: 'Mindful Week', desc: '7 breathing exercises', points: 150, target: 7 }
+            ]
+        };
+
+        // ==================== ACTIVITIES ====================
+        const ACTIVITIES_DB = [
+            { id: 'breathing', icon: '🌬️', name: '4-7-8 Breathing', desc: 'Calm your nervous system', points: 15 },
+            { id: 'walk', icon: '🚶', name: 'Mindful Walk', desc: 'Get outside and connect', points: 15 },
+            { id: 'gratitude', icon: '📝', name: 'Gratitude Journal', desc: 'Write 3 things you\'re grateful for', points: 20 },
+            { id: 'bodyscan', icon: '🧘', name: 'Body Scan', desc: 'Release tension through awareness', points: 15 },
+            { id: 'social', icon: '👥', name: 'Social Connection', desc: 'Reach out to someone', points: 15 },
+            { id: 'exercise', icon: '💪', name: 'Gentle Exercise', desc: 'Move your body', points: 15 }
+        ];
+
+        // ==================== CORE FUNCTIONS ====================
+
+        function awardPoints(activity, amount) {
+            appState.gamification.points += amount;
+            appState.gamification.xp += amount;
+            appState.community.weeklyPoints += amount;
+
+            // Show points animation
+            showPointsAnimation(amount);
+
+            // Check for level up
+            checkLevelUp();
+
+            // Update displays
+            updateHeader();
+            saveData();
+        }
+
+        function showPointsAnimation(points) {
+            if (confetti) {
+                confetti({
+                    particleCount: 30,
+                    spread: 60,
+                    origin: { y: 0.2 }
+                });
+            }
+        }
+
+        function checkLevelUp() {
+            const currentLevel = appState.gamification.level;
+            const nextLevel = LEVEL_CONFIG.find(l => l.level === currentLevel + 1);
+
+            if (nextLevel && appState.gamification.xp >= nextLevel.xpRequired) {
+                appState.gamification.level = nextLevel.level;
+                appState.gamification.xpToNextLevel = LEVEL_CONFIG.find(l => l.level === nextLevel.level + 1)?.xpRequired || 999999;
+
+                showLevelUpModal(nextLevel);
+                unlockAvatarItems(nextLevel.level);
+            }
+        }
+
+        function showLevelUpModal(level) {
+            if (confetti) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            showModal('🎉 Level Up!', `
+                <div style="text-align: center;">
+                    <div style="font-size: 8em; margin-bottom: 20px;">⬆️</div>
+                    <h2>You reached Level ${level.level}!</h2>
+                    <h3>${level.name}</h3>
+                    <p style="margin: 20px 0; font-size: 1.2em;">You've unlocked new avatar items!</p>
+                    <button class="btn btn-success btn-full" onclick="closeModal(); showSection('avatar')">
+                        View Avatar Items
+                    </button>
+                </div>
+            `);
+        }
+
+        function unlockAvatarItems(level) {
+            // Unlock backgrounds
+            AVATAR_ITEMS.backgrounds.forEach(bg => {
+                if (bg.unlockLevel === level && !appState.gamification.avatar.unlockedItems.includes(bg.id)) {
+                    appState.gamification.avatar.unlockedItems.push(bg.id);
+                }
+            });
+
+            // Unlock characters
+            AVATAR_ITEMS.characters.forEach(char => {
+                if (char.unlockLevel === level && !appState.gamification.avatar.unlockedItems.includes(char.id)) {
+                    appState.gamification.avatar.unlockedItems.push(char.id);
+                }
+            });
+        }
+
+        // ==================== CHECK-IN ====================
+
+        function selectMood(value, element) {
+            document.querySelectorAll('.mood-option').forEach(m => m.classList.remove('selected'));
+            element.classList.add('selected');
+            appState.selectedMood = value;
+
+            // Crisis detection
+            if (value === 1) {
+                detectCrisisEvent();
+            }
+        }
+
+        function saveCheckin() {
+            if (!appState.selectedMood) {
+                alert('Please select your mood first!');
+                return;
+            }
+
+            const today = new Date().toDateString();
+            const lastCheckIn = appState.user.lastCheckIn ? new Date(appState.user.lastCheckIn).toDateString() : null;
+
+            // Award points
+            awardPoints('checkin', 10);
+
+            // Update streak
+            if (lastCheckIn !== today) {
+                if (lastCheckIn === new Date(Date.now() - 86400000).toDateString()) {
+                    appState.user.streak++;
+                } else {
+                    appState.user.streak = 1;
+                }
+                appState.user.lastCheckIn = new Date().toISOString();
+            }
+
+            // Save check-in data
+            appState.checkins.push({
+                date: new Date().toISOString(),
+                mood: appState.selectedMood,
+                sleep: document.getElementById('sleepQuality').value,
+                energy: document.getElementById('energyLevel').value,
+                note: document.getElementById('checkinNote').value
+            });
+
+            // Track mood trend
+            appState.psychiatristData.trends.moodTrend.push({
+                date: new Date().toISOString(),
+                mood: appState.selectedMood
+            });
+
+            // Check challenges
+            updateChallengeProgress('checkin', 1);
+
+            // Check streak badges
+            checkStreakBadges();
+
+            saveData();
+            updateHeader();
+
+            showModal('✅ Check-In Complete!', `
+                <div style="text-align: center;">
+                    <div style="font-size: 5em; margin-bottom: 20px;">🎉</div>
+                    <h2>Great job!</h2>
+                    <p style="margin: 20px 0;">You earned <strong class="badge badge-gold">+10 points</strong></p>
+                    <p>Current streak: <strong>${appState.user.streak} days 🔥</strong></p>
+                    <button class="btn btn-success btn-full" style="margin-top: 25px;" onclick="closeModal()">
+                        Continue
+                    </button>
+                </div>
+            `);
+        }
+
+        function checkStreakBadges() {
+            const streak = appState.user.streak;
+
+            if (streak >= 3 && !appState.gamification.avatar.unlockedItems.includes('badge-streak3')) {
+                appState.gamification.avatar.unlockedItems.push('badge-streak3');
+                awardPoints('badge', 100);
+            }
+            if (streak >= 7 && !appState.gamification.avatar.unlockedItems.includes('badge-streak7')) {
+                appState.gamification.avatar.unlockedItems.push('badge-streak7');
+                awardPoints('badge', 300);
+            }
+            if (streak >= 30 && !appState.gamification.avatar.unlockedItems.includes('badge-streak30')) {
+                appState.gamification.avatar.unlockedItems.push('badge-streak30');
+                awardPoints('badge', 1000);
+            }
+        }
+
+        // ==================== MEDICATIONS ====================
+
+        function addMedication() {
+            showModal('Add Medication', `
+                <div class="form-group">
+                    <label class="form-label">Medication Name</label>
+                    <input type="text" class="form-input" id="newMedName" placeholder="e.g., Sertraline">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dosage</label>
+                    <input type="text" class="form-input" id="newMedDose" placeholder="e.g., 50mg">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Time</label>
+                    <select class="form-select" id="newMedTime">
+                        <option>Morning</option>
+                        <option>Afternoon</option>
+                        <option>Evening</option>
+                        <option>Bedtime</option>
+                    </select>
+                </div>
+                <button class="btn btn-success btn-full" onclick="saveMedication()">
+                    Add Medication
+                </button>
+            `);
+        }
+
+        function saveMedication() {
+            const med = {
+                id: Date.now(),
+                name: document.getElementById('newMedName').value,
+                dose: document.getElementById('newMedDose').value,
+                time: document.getElementById('newMedTime').value,
+                taken: false,
+                takenToday: false
+            };
+            appState.medications.push(med);
+            renderMedications();
+            saveData();
+            closeModal();
+        }
+
+        function takeMedication(id) {
+            const med = appState.medications.find(m => m.id === id);
+            if (med && !med.takenToday) {
+                med.taken = true;
+                med.takenToday = true;
+
+                awardPoints('medication', 5);
+                updateChallengeProgress('medication', 1);
+
+                renderMedications();
+                saveData();
+            }
+        }
+
+        function renderMedications() {
+            const container = document.getElementById('medicationList');
+            if (!container) return;
+
+            if (appState.medications.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-medium);">No medications added yet.</p>';
+                return;
+            }
+
+            container.innerHTML = appState.medications.map(med => `
+                <div style="background: var(--bg-main); padding: 20px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 1.1em;">${med.name}</div>
+                        <div style="color: var(--text-medium);">${med.dose} • ${med.time}</div>
+                    </div>
+                    <button class="btn ${med.takenToday ? 'btn-success' : ''}" onclick="takeMedication(${med.id})" ${med.takenToday ? 'disabled' : ''}>
+                        ${med.takenToday ? '✓ Taken' : 'Mark Taken (+5 pts)'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // ==================== ACTIVITIES ====================
+
+        function completeActivity(id) {
+            const activity = ACTIVITIES_DB.find(a => a.id === id);
+            if (!activity) return;
+
+            appState.activities.push({
+                id: id,
+                date: new Date().toISOString()
+            });
+
+            awardPoints('activity', activity.points);
+            updateChallengeProgress('activity', 1);
+
+            saveData();
+
+            showModal('🎉 Activity Complete!', `
+                <div style="text-align: center;">
+                    <div style="font-size: 5em; margin-bottom: 20px;">${activity.icon}</div>
+                    <h2>Great work!</h2>
+                    <p style="margin: 20px 0;">You earned <strong class="badge badge-gold">+${activity.points} points</strong></p>
+                    <button class="btn btn-success btn-full" style="margin-top: 25px;" onclick="closeModal()">
+                        Continue
+                    </button>
+                </div>
+            `);
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('activitiesList');
+            if (!container) return;
+
+            container.innerHTML = ACTIVITIES_DB.map(activity => `
+                <div class="card" style="cursor: pointer; text-align: center;" onclick="completeActivity('${activity.id}')">
+                    <div style="font-size: 3em; margin-bottom: 10px;">${activity.icon}</div>
+                    <h3 style="margin: 10px 0;">${activity.name}</h3>
+                    <p style="color: var(--text-medium); margin-bottom: 10px;">${activity.desc}</p>
+                    <span class="badge badge-gold">+${activity.points} points</span>
+                </div>
+            `).join('');
+        }
+
+        // ==================== CHALLENGES ====================
+
+        function initializeChallenges() {
+            const today = new Date().toDateString();
+            const lastReset = localStorage.getItem('lastDailyChallengeReset');
+
+            // Reset daily challenges
+            if (lastReset !== today) {
+                appState.gamification.activeChallenges = appState.gamification.activeChallenges.filter(c => c.type !== 'daily');
+
+                // Add new daily challenges
+                const dailyChallenges = CHALLENGE_TEMPLATES.daily.slice(0, 3).map(template => ({
+                    ...template,
+                    type: 'daily',
+                    progress: 0,
+                    deadline: new Date(new Date().setHours(23, 59, 59)).toISOString()
+                }));
+
+                appState.gamification.activeChallenges.push(...dailyChallenges);
+                localStorage.setItem('lastDailyChallengeReset', today);
+            }
+
+            // Reset weekly challenges (on Sunday)
+            const dayOfWeek = new Date().getDay();
+            const lastWeeklyReset = localStorage.getItem('lastWeeklyChallengeReset');
+            const thisWeek = new Date().toISOString().split('T')[0];
+
+            if (dayOfWeek === 0 && lastWeeklyReset !== thisWeek) {
+                appState.gamification.activeChallenges = appState.gamification.activeChallenges.filter(c => c.type !== 'weekly');
+                appState.community.weeklyPoints = 0;
+
+                // Add new weekly challenges
+                const weeklyChallenges = CHALLENGE_TEMPLATES.weekly.map(template => ({
+                    ...template,
+                    type: 'weekly',
+                    progress: 0,
+                    deadline: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString()
+                }));
+
+                appState.gamification.activeChallenges.push(...weeklyChallenges);
+                localStorage.setItem('lastWeeklyChallengeReset', thisWeek);
+            }
+
+            saveData();
+        }
+
+        function updateChallengeProgress(activityType, amount) {
+            let challengeCompleted = false;
+
+            appState.gamification.activeChallenges.forEach(challenge => {
+                if (challenge.id.includes(activityType) && challenge.progress < challenge.target) {
+                    challenge.progress += amount;
+
+                    if (challenge.progress >= challenge.target) {
+                        challenge.completed = true;
+                        appState.gamification.completedChallenges.push({
+                            ...challenge,
+                            completedDate: new Date().toISOString()
+                        });
+                        awardPoints('challenge', challenge.points);
+                        challengeCompleted = true;
+
+                        // Check first challenge badge
+                        if (!appState.gamification.avatar.unlockedItems.includes('badge-first')) {
+                            appState.gamification.avatar.unlockedItems.push('badge-first');
+                        }
+                    }
+                }
+            });
+
+            // Remove completed challenges
+            appState.gamification.activeChallenges = appState.gamification.activeChallenges.filter(c => !c.completed);
+
+            if (challengeCompleted) {
+                renderChallenges();
+            }
+
+            saveData();
+        }
+
+        function renderChallenges() {
+            const dailyContainer = document.getElementById('dailyChallengesList');
+            const weeklyContainer = document.getElementById('weeklyChallengesList');
+
+            if (dailyContainer) {
+                const dailyChallenges = appState.gamification.activeChallenges.filter(c => c.type === 'daily');
+                dailyContainer.innerHTML = dailyChallenges.map(challenge => `
+                    <div class="challenge-card">
+                        <div class="challenge-title">${challenge.name}</div>
+                        <div class="challenge-desc">${challenge.desc}</div>
+                        <div class="challenge-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span>${challenge.progress}/${challenge.target}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(challenge.progress / challenge.target * 100)}%; background: rgba(255,255,255,0.8);"></div>
+                            </div>
+                        </div>
+                        <div class="challenge-reward">
+                            <span>🏆</span>
+                            <span>${challenge.points} points</span>
+                        </div>
+                    </div>
+                `).join('') || '<p style="color: var(--text-medium);">All daily challenges complete! Come back tomorrow.</p>';
+            }
+
+            if (weeklyContainer) {
+                const weeklyChallenges = appState.gamification.activeChallenges.filter(c => c.type === 'weekly');
+                weeklyContainer.innerHTML = weeklyChallenges.map(challenge => `
+                    <div class="challenge-card">
+                        <div class="challenge-title">${challenge.name}</div>
+                        <div class="challenge-desc">${challenge.desc}</div>
+                        <div class="challenge-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span>${challenge.progress}/${challenge.target}</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(challenge.progress / challenge.target * 100)}%; background: rgba(255,255,255,0.8);"></div>
+                            </div>
+                        </div>
+                        <div class="challenge-reward">
+                            <span>🏆</span>
+                            <span>${challenge.points} points</span>
+                        </div>
+                    </div>
+                `).join('') || '<p style="color: var(--text-medium);">All weekly challenges complete! Great job!</p>';
+            }
+        }
+
+        // ==================== AVATAR ====================
+
+        function renderAvatarCustomizer() {
+            renderAvatarPreview();
+
+            // Backgrounds
+            const bgContainer = document.getElementById('backgroundItems');
+            if (bgContainer) {
+                bgContainer.innerHTML = AVATAR_ITEMS.backgrounds.map(bg => {
+                    const unlocked = appState.gamification.avatar.unlockedItems.includes(bg.id);
+                    const equipped = appState.gamification.avatar.equippedItems.background === bg.id;
+                    return `
+                        <div class="avatar-item ${unlocked ? '' : 'locked'} ${equipped ? 'equipped' : ''}"
+                             onclick="${unlocked ? `equipAvatarItem('background', '${bg.id}')` : ''}">
+                            <div style="width: 100%; height: 100%; background: ${bg.gradient}; border-radius: 8px;"></div>
+                            ${!unlocked ? '<div class="lock-icon">🔒</div>' : ''}
+                            ${equipped ? '<div class="lock-icon">✓</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Characters
+            const charContainer = document.getElementById('characterItems');
+            if (charContainer) {
+                charContainer.innerHTML = AVATAR_ITEMS.characters.map(char => {
+                    const unlocked = appState.gamification.avatar.unlockedItems.includes(char.id);
+                    const equipped = appState.gamification.avatar.equippedItems.character === char.id;
+                    return `
+                        <div class="avatar-item ${unlocked ? '' : 'locked'} ${equipped ? 'equipped' : ''}"
+                             onclick="${unlocked ? `equipAvatarItem('character', '${char.id}')` : ''}">
+                            ${char.emoji}
+                            ${!unlocked ? '<div class="lock-icon">🔒</div>' : ''}
+                            ${equipped ? '<div class="lock-icon">✓</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Badges
+            const badgeContainer = document.getElementById('badgeItems');
+            if (badgeContainer) {
+                badgeContainer.innerHTML = AVATAR_ITEMS.badges.map(badge => {
+                    const unlocked = appState.gamification.avatar.unlockedItems.includes(badge.id);
+                    const equipped = appState.gamification.avatar.equippedItems.badge === badge.id;
+                    return `
+                        <div class="avatar-item ${unlocked ? '' : 'locked'} ${equipped ? 'equipped' : ''}"
+                             onclick="${unlocked ? `equipAvatarItem('badge', '${badge.id}')` : ''}">
+                            ${badge.emoji}
+                            ${!unlocked ? '<div class="lock-icon">🔒</div>' : ''}
+                            ${equipped ? '<div class="lock-icon">✓</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function equipAvatarItem(slot, itemId) {
+            appState.gamification.avatar.equippedItems[slot] = itemId;
+            renderAvatarPreview();
+            renderAvatarCustomizer();
+        }
+
+        function renderAvatarPreview() {
+            const bgElement = document.getElementById('avatarBackground');
+            const charElement = document.getElementById('avatarCharacter');
+            const badgeElement = document.getElementById('avatarBadgeDisplay');
+
+            if (bgElement) {
+                const bg = AVATAR_ITEMS.backgrounds.find(b => b.id === appState.gamification.avatar.equippedItems.background);
+                bgElement.style.background = bg ? bg.gradient : AVATAR_ITEMS.backgrounds[0].gradient;
+            }
+
+            if (charElement) {
+                const char = AVATAR_ITEMS.characters.find(c => c.id === appState.gamification.avatar.equippedItems.character);
+                charElement.textContent = char ? char.emoji : '☁️';
+            }
+
+            if (badgeElement) {
+                const badge = AVATAR_ITEMS.badges.find(b => b.id === appState.gamification.avatar.equippedItems.badge);
+                badgeElement.textContent = badge ? badge.emoji : '';
+            }
+        }
+
+        function saveAvatar() {
+            saveData();
+            alert('Avatar saved!');
+        }
+
+        // ==================== LEADERBOARD ====================
+
+        function enableLeaderboard() {
+            appState.community.shareProgress = true;
+            appState.community.anonymousId = generateAnonymousId();
+
+            document.getElementById('leaderboardOptIn').style.display = 'none';
+            document.getElementById('leaderboardContent').style.display = 'block';
+
+            renderLeaderboard();
+            saveData();
+        }
+
+        function disableLeaderboard() {
+            if (confirm('Are you sure you want to leave the leaderboard? Your anonymous progress will be removed.')) {
+                appState.community.shareProgress = false;
+                appState.community.anonymousId = null;
+
+                document.getElementById('leaderboardOptIn').style.display = 'block';
+                document.getElementById('leaderboardContent').style.display = 'none';
+
+                saveData();
+            }
+        }
+
+        function generateAnonymousId() {
+            const adjectives = ['Mindful', 'Brave', 'Calm', 'Strong', 'Peaceful', 'Resilient', 'Focused', 'Happy'];
+            const nouns = ['Dragon', 'Phoenix', 'Tiger', 'Eagle', 'Wolf', 'Bear', 'Lion', 'Owl'];
+            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const num = Math.floor(Math.random() * 99) + 1;
+            return `${adj}${noun}${num}`;
+        }
+
+        function renderLeaderboard() {
+            // Mock leaderboard data (in real app, this would come from server)
+            const mockLeaderboard = [
+                { id: 'User1', points: 2500 },
+                { id: 'User2', points: 2200 },
+                { id: appState.community.anonymousId, points: appState.gamification.points },
+                { id: 'User3', points: 1800 },
+                { id: 'User4', points: 1500 }
+            ].sort((a, b) => b.points - a.points);
+
+            const weeklyContainer = document.getElementById('leaderboardWeekly');
+            if (weeklyContainer) {
+                weeklyContainer.innerHTML = mockLeaderboard.map((entry, index) => {
+                    const isCurrentUser = entry.id === appState.community.anonymousId;
+                    return `
+                        <div class="leaderboard-entry ${isCurrentUser ? 'current-user' : ''}">
+                            <div class="leaderboard-rank ${index < 3 ? 'top-3' : ''}">#${index + 1}</div>
+                            <div class="leaderboard-name">${entry.id}${isCurrentUser ? ' (You)' : ''}</div>
+                            <div class="leaderboard-points">${entry.points}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function showLeaderboardTab(tab) {
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('#leaderboard .portal-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`leaderboard${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        }
+
+        // ==================== CAREGIVER ====================
+
+        function generateConnectionCode() {
+            const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            appState.caregiverConnection.code = code;
+            appState.caregiverConnection.connected = true;
+
+            document.getElementById('caregiverNotConnected').style.display = 'none';
+            document.getElementById('caregiverConnected').style.display = 'block';
+
+            renderCaregiverPortal();
+            saveData();
+
+            showModal('Connection Code Generated', `
+                <div style="text-align: center;">
+                    <p style="margin-bottom: 20px;">Share this code with your caregiver:</p>
+                    <div class="connection-code">${code}</div>
+                    <p style="margin-top: 20px; color: var(--text-medium);">This code expires in 24 hours</p>
+                    <button class="btn btn-full" style="margin-top: 20px;" onclick="closeModal()">Done</button>
+                </div>
+            `);
+        }
+
+        function renderCaregiverPortal() {
+            const progressContainer = document.getElementById('caregiverProgress');
+            if (progressContainer) {
+                progressContainer.innerHTML = `
+                    <h3>Patient Progress Summary</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-box-value">${appState.user.streak}</div>
+                            <div class="stat-box-label">Day Streak</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-value">${appState.gamification.points}</div>
+                            <div class="stat-box-label">Total Points</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-value">${appState.gamification.level}</div>
+                            <div class="stat-box-label">Current Level</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function showCaregiverTab(tab) {
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('#caregiver .portal-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`caregiver${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        }
+
+        // ==================== PSYCHIATRIST ====================
+
+        function enablePsychiatristSharing() {
+            if (confirm('Enable data sharing with your healthcare provider? You can disable this anytime.')) {
+                appState.psychiatristData.enableSharing = true;
+
+                document.getElementById('psychiatristOptIn').style.display = 'none';
+                document.getElementById('psychiatristDashboard').style.display = 'block';
+
+                renderPsychiatristDashboard();
+                saveData();
+            }
+        }
+
+        function renderPsychiatristDashboard() {
+            renderMoodTrendChart();
+            renderActivityChart();
+            detectCrisisIndicators();
+        }
+
+        function renderMoodTrendChart() {
+            const canvas = document.getElementById('moodTrendChart');
+            if (!canvas || !window.Chart) return;
+
+            const ctx = canvas.getContext('2d');
+            const moodData = appState.psychiatristData.trends.moodTrend.slice(-30);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: moodData.map(d => new Date(d.date).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Mood Score',
+                        data: moodData.map(d => d.mood),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderActivityChart() {
+            const canvas = document.getElementById('activityChart');
+            if (!canvas || !window.Chart) return;
+
+            const ctx = canvas.getContext('2d');
+
+            const activityCounts = {};
+            appState.activities.forEach(a => {
+                activityCounts[a.id] = (activityCounts[a.id] || 0) + 1;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(activityCounts),
+                    datasets: [{
+                        label: 'Activities Completed',
+                        data: Object.values(activityCounts),
+                        backgroundColor: 'rgba(139, 92, 246, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function detectCrisisIndicators() {
+            const alertsContainer = document.getElementById('alertsList');
+            if (!alertsContainer) return;
+
+            const alerts = [];
+
+            // Check for consecutive crisis moods
+            const recentMoods = appState.checkins.slice(-5).map(c => c.mood);
+            const crisisMoods = recentMoods.filter(m => m === 1).length;
+            if (crisisMoods >= 2) {
+                alerts.push({
+                    type: 'red-flag',
+                    title: 'Crisis Mood Pattern Detected',
+                    desc: `${crisisMoods} crisis mood logs in last 5 check-ins`,
+                    action: 'Immediate attention recommended'
+                });
+            }
+
+            // Check for low streaks
+            if (appState.user.streak === 0 && appState.checkins.length > 7) {
+                alerts.push({
+                    type: 'yellow-flag',
+                    title: 'Engagement Drop',
+                    desc: 'No check-ins for multiple days',
+                    action: 'Consider reaching out'
+                });
+            }
+
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = '<p style="color: var(--secondary);">✅ No alerts. Patient is progressing well.</p>';
+            } else {
+                alertsContainer.innerHTML = alerts.map(alert => `
+                    <div class="alert-card ${alert.type}">
+                        <strong>${alert.title}</strong>
+                        <p style="margin: 5px 0; color: var(--text-medium);">${alert.desc}</p>
+                        <p style="font-weight: 600; margin-top: 10px;">→ ${alert.action}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function generateReport() {
+            alert('Report generated! In a full implementation, this would compile data into a detailed report.');
+        }
+
+        function exportReportPDF() {
+            alert('PDF export would use jsPDF library to create a downloadable report.');
+        }
+
+        function showPsychiatristTab(tab) {
+            document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('#psychiatrist .portal-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`psychiatrist${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        }
+
+        // ==================== SETTINGS ====================
+
+        function saveSettings() {
+            appState.user.name = document.getElementById('settingsName').value || 'Friend';
+            updateHeader();
+            saveData();
+            alert('Settings saved!');
+        }
+
+        function toggleCommunitySetting() {
+            const enabled = document.getElementById('settingsCommunity').checked;
+            if (enabled) {
+                enableLeaderboard();
+            } else {
+                disableLeaderboard();
+            }
+        }
+
+        function togglePsychiatristSetting() {
+            const enabled = document.getElementById('settingsPsychiatrist').checked;
+            appState.psychiatristData.enableSharing = enabled;
+            saveData();
+        }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(appState, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'mindcare-data.json';
+            link.click();
+        }
+
+        function deleteAllData() {
+            if (confirm('Are you sure? This will permanently delete all your data. This cannot be undone.')) {
+                if (confirm('Final confirmation: Delete all data?')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+        }
+
+        // ==================== UI FUNCTIONS ====================
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Render section-specific content
+            if (sectionId === 'gamification') renderChallenges();
+            if (sectionId === 'avatar') renderAvatarCustomizer();
+            if (sectionId === 'leaderboard' && appState.community.shareProgress) renderLeaderboard();
+            if (sectionId === 'medication') renderMedications();
+            if (sectionId === 'activities') renderActivities();
+            if (sectionId === 'psychiatrist' && appState.psychiatristData.enableSharing) renderPsychiatristDashboard();
+        }
+
+        function updateHeader() {
+            const currentLevel = LEVEL_CONFIG.find(l => l.level === appState.gamification.level);
+            const nextLevel = LEVEL_CONFIG.find(l => l.level === appState.gamification.level + 1);
+
+            document.getElementById('headerLevelNumber').textContent = appState.gamification.level;
+            document.getElementById('headerLevel').textContent = currentLevel.name;
+            document.getElementById('headerPoints').textContent = appState.gamification.points;
+            document.getElementById('headerStreak').textContent = appState.user.streak;
+
+            if (nextLevel) {
+                const xpProgress = ((appState.gamification.xp - currentLevel.xpRequired) / (nextLevel.xpRequired - currentLevel.xpRequired) * 100);
+                document.getElementById('headerXpFill').style.width = xpProgress + '%';
+            }
+
+            const userName = document.getElementById('userName');
+            if (userName) userName.textContent = appState.user.name;
+
+            // Update quick stats
+            const quickStatsPoints = document.getElementById('quickStatsPoints');
+            const quickStatsLevel = document.getElementById('quickStatsLevel');
+            if (quickStatsPoints) quickStatsPoints.textContent = appState.gamification.points;
+            if (quickStatsLevel) quickStatsLevel.textContent = appState.gamification.level;
+        }
+
+        function showModal(title, body) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = body;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) closeModal();
+        }
+
+        // ==================== DATA PERSISTENCE ====================
+
+        function saveData() {
+            localStorage.setItem('mindcareGamificationData', JSON.stringify(appState));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('mindcareGamificationData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    // Merge with defaults to ensure new fields exist
+                    appState = { ...appState, ...data };
+
+                    // Migration: ensure all new fields exist
+                    if (!appState.gamification) appState.gamification = { points: 0, level: 1, xp: 0 };
+                    if (!appState.community) appState.community = { anonymousId: null, shareProgress: false };
+                } catch (e) {
+                    console.error('Error loading data:', e);
+                }
+            }
+        }
+
+        // ==================== INITIALIZATION ====================
+
+        function init() {
+            loadData();
+            initializeChallenges();
+            updateHeader();
+            renderActivities();
+            renderMedications();
+            renderChallenges();
+            renderAvatarPreview();
+
+            // Check if leaderboard enabled
+            if (appState.community.shareProgress) {
+                document.getElementById('leaderboardOptIn').style.display = 'none';
+                document.getElementById('leaderboardContent').style.display = 'block';
+            } else {
+                document.getElementById('leaderboardOptIn').style.display = 'block';
+                document.getElementById('leaderboardContent').style.display = 'none';
+            }
+
+            // Check if psychiatrist sharing enabled
+            if (appState.psychiatristData.enableSharing) {
+                document.getElementById('psychiatristOptIn').style.display = 'none';
+                document.getElementById('psychiatristDashboard').style.display = 'block';
+            }
+
+            // Check if caregiver connected
+            if (appState.caregiverConnection.connected) {
+                document.getElementById('caregiverNotConnected').style.display = 'none';
+                document.getElementById('caregiverConnected').style.display = 'block';
+                renderCaregiverPortal();
+            }
+
+            // Update settings checkboxes
+            const communityCheckbox = document.getElementById('settingsCommunity');
+            const psychiatristCheckbox = document.getElementById('settingsPsychiatrist');
+            if (communityCheckbox) communityCheckbox.checked = appState.community.shareProgress;
+            if (psychiatristCheckbox) psychiatristCheckbox.checked = appState.psychiatristData.enableSharing;
+
+            // Update settings name
+            const settingsName = document.getElementById('settingsName');
+            if (settingsName) settingsName.value = appState.user.name;
+
+            // Daily auto-save
+            setInterval(saveData, 30000); // Auto-save every 30 seconds
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

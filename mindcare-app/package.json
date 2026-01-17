@@ -1,0 +1,40 @@
+{
+  "name": "mindcare-app",
+  "version": "1.0.0",
+  "description": "A comprehensive, empathetic mental health support application with caregiver education platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "http-server -p 8000",
+    "deploy:netlify": "netlify deploy --prod",
+    "deploy:vercel": "vercel --prod",
+    "deploy:firebase": "firebase deploy"
+  },
+  "keywords": [
+    "mental-health",
+    "wellness",
+    "therapy",
+    "caregiver",
+    "mental-health-support",
+    "mood-tracking",
+    "anxiety",
+    "depression",
+    "self-care",
+    "web-app"
+  ],
+  "author": "MindCare Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mindcare-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/mindcare-app/issues"
+  },
+  "homepage": "https://yourusername.github.io/mindcare-app/",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
