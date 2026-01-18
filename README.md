@@ -25,28 +25,44 @@ A comprehensive mental health support application with gamification features des
 - **Crisis Detection** - Automated alerts for concerning patterns
 - **Data Visualization** - Charts and trends using Chart.js
 
+### 🤖 AI-Powered Features (New!)
+- **Digital Twin Companion** - Floating AI that provides encouragement
+- **Intelligent Chatbot** - Ask questions, get evidence-based answers
+- **Custom Exercise Creator** - Personalized activities based on your needs
+- **Educational Insights** - Learn why activities work (neuroscience)
+- **Progress Projections** - See where you're heading
+- **Report Generation** - Share insights with care team (with permission)
+- **Crisis Detection** - Immediate helpline information when needed
+
 ### 🔒 Privacy First
 - **Local Storage** - All data stays on your device
 - **Opt-In Sharing** - You control what gets shared
 - **Anonymous Mode** - Community features use random usernames
 - **Data Export** - Download all your data anytime
+- **AI Disclaimers** - Always reminds to consult specialists
 
 ## 🚀 Live Demo
 
-**Try it now:** [https://cshuxteau.github.io/mincareapp/](https://cshuxteau.github.io/mincareapp/)
+**Landing Page:** [https://cshuxteau.github.io/mincareapp/](https://cshuxteau.github.io/mincareapp/)
+
+**Two Versions Available:**
+- **AI Companion Version (Recommended):** [mindcare-ai-companion.html](https://cshuxteau.github.io/mincareapp/mindcare-ai-companion.html)
+- **Standard Version:** [mindcare-between-sessions.html](https://cshuxteau.github.io/mincareapp/mindcare-between-sessions.html)
 
 ## 📦 What's Included
 
 ```
 mincareapp/
-├── mindcare-between-sessions.html  # Main application (single-file)
-├── mindcare-app/                   # Reference implementation
-│   ├── index.html                  # Alternative version
-│   └── docs/                       # Documentation
-├── docs/                           # Implementation plans
-│   └── plans/                      # Design documents
-├── MindCare-Design-Spec.md        # Full specification
-└── README.md                       # This file
+├── index.html                          # Landing page
+├── mindcare-ai-companion.html          # AI-powered version (recommended)
+├── mindcare-between-sessions.html      # Standard gamification version
+├── mindcare-app/                       # Reference implementation
+│   ├── index.html                      # Original version
+│   └── docs/                           # Documentation
+├── docs/                               # Implementation plans
+│   └── plans/                          # Design documents
+├── MindCare-Design-Spec.md            # Full specification
+└── README.md                           # This file
 ```
 
 ## 💻 Usage
@@ -55,7 +71,9 @@ mincareapp/
 Simply visit the [live demo](https://cshuxteau.github.io/mincareapp/) in any modern web browser.
 
 ### Option 2: Download and Run Locally
-1. Download `mindcare-between-sessions.html`
+1. Download your preferred version:
+   - `mindcare-ai-companion.html` (with AI features)
+   - `mindcare-between-sessions.html` (standard version)
 2. Open it in any modern web browser
 3. No installation or server required!
 
@@ -157,7 +175,19 @@ This project is licensed under the MIT License - see the [LICENSE](mindcare-app/
 
 ## 📝 Changelog
 
-### Version 2.0 (2026-01-17)
+### Version 3.0 - AI Companion (2026-01-17)
+- 🤖 AI Digital Twin companion with floating avatar
+- 💬 Intelligent chatbot accessible from any page
+- 🧠 Evidence-based psychiatric Q&A system
+- 📚 Educational insights about conditions and treatments
+- 🎯 Custom exercise creator based on user needs
+- 📊 AI-powered progress projections
+- 🆘 Crisis detection with immediate resources
+- 📄 Report generation for care team (with permission)
+- 🔬 Neuroscience explanations for all activities
+- 🎓 CBT, DBT, MBSR technique education
+
+### Version 2.0 - Enhanced Gamification (2026-01-17)
 - ✨ Complete gamification system with 10 levels
 - 🎯 Daily and weekly challenges
 - 👤 Avatar customization with unlockables
