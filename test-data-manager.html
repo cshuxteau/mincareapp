@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataManager Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        button {
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3db8af;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        h2 {
+            color: #2C3E50;
+        }
+    </style>
+</head>
+<body>
+    <h1>DataManager Test Suite</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Initialize DataManager</h2>
+        <button onclick="testInit()">Run Test</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Save and Load Data</h2>
+        <button onclick="testSaveLoad()">Run Test</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Get/Set by Path</h2>
+        <button onclick="testGetSet()">Run Test</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Add XP and Level Up</h2>
+        <button onclick="testXP()">Run Test</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Update Streak</h2>
+        <button onclick="testStreak()">Run Test</button>
+        <div id="test5-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 6: Export/Import Data</h2>
+        <button onclick="testExportImport()">Run Test</button>
+        <div id="test6-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Current Data</h2>
+        <button onclick="showData()">Show All Data</button>
+        <button onclick="clearData()">Clear All Data</button>
+        <pre id="data-display"></pre>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/dataManager.js"></script>
+    <script>
+        function showResult(elementId, success, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${success ? 'success' : 'error'}">${message}</div>`;
+        }
+
+        function testInit() {
+            try {
+                dataManager.init();
+                const data = dataManager.getAllData();
+
+                if (data && data.player && data.player.id) {
+                    showResult('test1-result', true, `✓ DataManager initialized successfully!<br>Player ID: ${data.player.id}<br>Version: ${data.version}`);
+                } else {
+                    showResult('test1-result', false, '✗ Failed to initialize DataManager properly');
+                }
+            } catch (error) {
+                showResult('test1-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function testSaveLoad() {
+            try {
+                dataManager.init();
+
+                // Save test data
+                dataManager.set('player.name', 'TestPlayer');
+                dataManager.saveData();
+
+                // Load data
+                dataManager.loadData();
+                const name = dataManager.get('player.name');
+
+                if (name === 'TestPlayer') {
+                    showResult('test2-result', true, `✓ Save/Load working correctly!<br>Saved and retrieved: ${name}`);
+                } else {
+                    showResult('test2-result', false, `✗ Data mismatch. Expected 'TestPlayer', got '${name}'`);
+                }
+            } catch (error) {
+                showResult('test2-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function testGetSet() {
+            try {
+                dataManager.init();
+
+                // Test nested path
+                dataManager.set('player.stats.activitiesCompleted', 42);
+                const value = dataManager.get('player.stats.activitiesCompleted');
+
+                if (value === 42) {
+                    showResult('test3-result', true, `✓ Get/Set by path working!<br>Set value: 42<br>Retrieved value: ${value}`);
+                } else {
+                    showResult('test3-result', false, `✗ Value mismatch. Expected 42, got ${value}`);
+                }
+            } catch (error) {
+                showResult('test3-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function testXP() {
+            try {
+                dataManager.init();
+
+                // Reset player level for test
+                dataManager.set('player.level', 1);
+                dataManager.set('player.currentXP', 0);
+                dataManager.set('player.totalXP', 0);
+
+                // Add XP
+                const result = dataManager.addXP(150, 'test');
+
+                showResult('test4-result', true,
+                    `✓ XP system working!<br>
+                    Added: 150 XP<br>
+                    Current XP: ${result.newXP}<br>
+                    Total XP: ${result.totalXP}<br>
+                    Level: ${result.newLevel}<br>
+                    Leveled Up: ${result.leveledUp ? 'Yes' : 'No'}`
+                );
+            } catch (error) {
+                showResult('test4-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function testStreak() {
+            try {
+                dataManager.init();
+
+                // Update streak
+                const streak = dataManager.updateStreak();
+
+                showResult('test5-result', true,
+                    `✓ Streak system working!<br>
+                    Current Streak: ${streak.current} days<br>
+                    Longest Streak: ${streak.longest} days<br>
+                    Last Check-in: ${new Date(streak.lastCheckin).toLocaleString()}`
+                );
+            } catch (error) {
+                showResult('test5-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function testExportImport() {
+            try {
+                dataManager.init();
+
+                // Set test value
+                dataManager.set('player.name', 'ExportTest');
+
+                // Export
+                const exported = dataManager.exportData();
+
+                // Change value
+                dataManager.set('player.name', 'Changed');
+
+                // Import
+                const success = dataManager.importData(exported);
+
+                // Check if restored
+                const name = dataManager.get('player.name');
+
+                if (success && name === 'ExportTest') {
+                    showResult('test6-result', true,
+                        `✓ Export/Import working!<br>
+                        Original: ExportTest<br>
+                        After Import: ${name}<br>
+                        Export size: ${(exported.length / 1024).toFixed(2)} KB`
+                    );
+                } else {
+                    showResult('test6-result', false, `✗ Import failed or data mismatch`);
+                }
+            } catch (error) {
+                showResult('test6-result', false, `✗ Error: ${error.message}`);
+            }
+        }
+
+        function showData() {
+            try {
+                dataManager.init();
+                const data = dataManager.getAllData();
+                document.getElementById('data-display').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('data-display').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                dataManager.clearAllData(true);
+                document.getElementById('data-display').textContent = 'Data cleared. Refresh page to see new defaults.';
+            }
+        }
+
+        // Auto-run first test on load
+        window.onload = function() {
+            testInit();
+        };
+    </script>
+</body>
+</html>
